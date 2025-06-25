@@ -26,7 +26,11 @@ pub fn fetch_sunrise_sunset(
     lat: f32,
     long: f32,
 ) -> Result<SunriseSunsetResponse, Box<dyn std::error::Error>> {
-    let url = format!("https://api.sunrisesunset.io/json?lat={}&lng={}", lat, long);
+    let url = format!(
+        "https://api.sunrisesunset.io/json?lat={:.6}&lng={:.6}",
+        lat, long
+    );
+    println!("Fetching sunrise/sunset data from: {}", url);
     let result = reqwest::blocking::get(&url)?;
     let resp = result.json::<SunriseSunsetResponse>()?;
     Ok(resp)
