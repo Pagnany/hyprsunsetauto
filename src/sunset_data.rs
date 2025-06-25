@@ -43,12 +43,10 @@ pub fn get_sunrise_sunset_for_today(
 ) -> Result<(NaiveTime, NaiveTime), Box<dyn std::error::Error>> {
     const FORMAT_TIME: &str = "%I:%M:%S %p";
 
-    let data = fetch_sunrise_sunset(lat, long).unwrap();
+    let data = fetch_sunrise_sunset(lat, long)?;
 
-    let time_sunrise =
-        NaiveTime::parse_from_str(&data.results.sunrise.unwrap(), FORMAT_TIME).unwrap();
-    let time_sunset =
-        NaiveTime::parse_from_str(&data.results.sunset.unwrap(), FORMAT_TIME).unwrap();
+    let time_sunrise = NaiveTime::parse_from_str(&data.results.sunrise.unwrap(), FORMAT_TIME)?;
+    let time_sunset = NaiveTime::parse_from_str(&data.results.sunset.unwrap(), FORMAT_TIME)?;
 
     Ok((time_sunrise, time_sunset))
 }
