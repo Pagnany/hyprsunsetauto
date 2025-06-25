@@ -13,6 +13,8 @@ fn main() {
     let temperature_day: i32 = args[3].parse().unwrap_or(6500);
     let temperature_night: i32 = args[4].parse().unwrap_or(3500);
 
+    thread::sleep(time::Duration::from_secs(10));
+
     // Setup
     let mut temperature_current = get_current_temperature().unwrap_or(temperature_day);
     let mut date = Local::now().date_naive();
