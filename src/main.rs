@@ -1,7 +1,10 @@
+use chrono::NaiveTime;
 use std::process::Command;
 use std::{thread, time};
 
 pub mod sunset_data;
+
+const FORMAT_TIME: &str = "%I:%M:%S %p";
 
 fn main() {
     // get parameters
@@ -18,6 +21,10 @@ fn main() {
 
     let data = sunset_data::fetch_sunrise_sunset(lat, long).unwrap();
     println!("{:#?}", data);
+
+    let input = "9:01:58 PM";
+    let time = NaiveTime::parse_from_str(input, FORMAT_TIME).unwrap();
+    println!("Parsed time: {}", time);
 
     // Wait for 1 minute
     thread::sleep(time::Duration::from_secs(1));
