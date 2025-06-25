@@ -1,9 +1,8 @@
-//https://api.sunrisesunset.io/json?lat=38.907192&lng=-77.036873
-
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct SunriseSunsetResults {
+    pub date: Option<String>,
     pub sunrise: Option<String>,
     pub sunset: Option<String>,
     pub first_light: Option<String>,
@@ -14,6 +13,7 @@ pub struct SunriseSunsetResults {
     pub golden_hour: Option<String>,
     pub day_length: Option<String>,
     pub timezone: Option<String>,
+    pub utc_offset: Option<i32>,
 }
 
 #[derive(Debug, Deserialize)]
@@ -23,10 +23,10 @@ pub struct SunriseSunsetResponse {
 }
 
 pub fn fetch_sunrise_sunset(
-    lat: f64,
-    lng: f64,
+    lat: f32,
+    long: f32,
 ) -> Result<SunriseSunsetResponse, Box<dyn std::error::Error>> {
-    let url = format!("https://api.sunrisesunset.io/json?lat={}&lng={}", lat, lng);
+    let url = format!("https://api.sunrisesunset.io/json?lat={}&lng={}", lat, long);
     let result = reqwest::blocking::get(&url)?;
     let resp = result.json::<SunriseSunsetResponse>()?;
     Ok(resp)
