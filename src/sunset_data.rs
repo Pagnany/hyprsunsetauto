@@ -1,3 +1,4 @@
+use chrono::NaiveTime;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -34,4 +35,20 @@ pub fn fetch_sunrise_sunset(
     let result = reqwest::blocking::get(&url)?;
     let resp = result.json::<SunriseSunsetResponse>()?;
     Ok(resp)
+}
+
+pub fn get_sunrise_sunset_for_today(
+    lat: f32,
+    long: f32,
+) -> Result<(NaiveTime, NaiveTime), Box<dyn std::error::Error>> {
+    const FORMAT_TIME: &str = "%I:%M:%S %p";
+
+    let data = fetch_sunrise_sunset(lat, long).unwrap();
+
+    let time_sunrise =
+        NaiveTime::parse_from_str(&data.results.sunrise.unwrap(), FORMAT_TIME).unwrap();
+    let time_sunset =
+        NaiveTime::parse_from_str(&data.results.sunset.unwrap(), FORMAT_TIME).unwrap();
+
+    Ok((time_sunrise, time_sunset))
 }

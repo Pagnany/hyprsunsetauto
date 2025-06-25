@@ -1,10 +1,8 @@
-use chrono::NaiveTime;
+use chrono::Local;
 use std::process::Command;
 use std::{thread, time};
 
 pub mod sunset_data;
-
-const FORMAT_TIME: &str = "%I:%M:%S %p";
 
 fn main() {
     // get parameters
@@ -15,19 +13,70 @@ fn main() {
     let temperature_day: i32 = args[3].parse().unwrap_or(6500);
     let temperature_night: i32 = args[4].parse().unwrap_or(3500);
 
-    if let Err(e) = toggle_temperature(temperature_day, temperature_night) {
-        eprintln!("Error: {}", e);
+    // Setup
+    let mut temperature_current = get_current_temperature().unwrap_or(temperature_day);
+    let mut date = Local::now().date_naive();
+
+    let (mut time_sunrise, mut time_sunset) =
+        match sunset_data::get_sunrise_sunset_for_today(lat, long) {
+            Ok((sunrise, sunset)) => (sunrise, sunset),
+            Err(e) => {
+                eprintln!("Error fetching sunrise/sunset data: {}", e);
+                panic!();
+            }
+        };
+
+    loop {
+        // if Date has changed, fetch new sunrise/sunset times
+        let current_date = Local::now().date_naive();
+        if current_date != date {
+            println!("Date changed from {} to {}", date, current_date);
+            date = current_date;
+
+            (time_sunrise, time_sunset) = match sunset_data::get_sunrise_sunset_for_today(lat, long)
+            {
+                Ok((sunrise, sunset)) => (sunrise, sunset),
+                Err(e) => {
+                    eprintln!(
+                        "Error fetching sunrise/sunset data: {}\n Retry in 60 Sec",
+                        e
+                    );
+                    thread::sleep(time::Duration::from_secs(60));
+                    // Try again on next iteration
+                    continue;
+                }
+            };
+        }
+
+        let time_current = Local::now().time();
+        println!("Current local time: {}", time_current);
+        println!("Sunrise: {}, Sunset: {}", time_sunrise, time_sunset);
+
+        // Check if we have to change the temperature
+        if time_current < time_sunrise || time_current > time_sunset {
+            println!("It's night");
+            if temperature_current != temperature_night {
+                println!("Setting temperature to {}K", temperature_night);
+                if let Err(e) = set_temperature(temperature_night) {
+                    eprintln!("Error setting night temperature: {}", e);
+                } else {
+                    temperature_current = temperature_night;
+                }
+            }
+        } else {
+            println!("It's day");
+            if temperature_current != temperature_day {
+                println!("Setting temperature to {}K", temperature_day);
+                if let Err(e) = set_temperature(temperature_day) {
+                    eprintln!("Error setting day temperature: {}", e);
+                } else {
+                    temperature_current = temperature_day;
+                }
+            }
+        }
+
+        thread::sleep(time::Duration::from_secs(60));
     }
-
-    let data = sunset_data::fetch_sunrise_sunset(lat, long).unwrap();
-    println!("{:#?}", data);
-
-    let input = "9:01:58 PM";
-    let time = NaiveTime::parse_from_str(input, FORMAT_TIME).unwrap();
-    println!("Parsed time: {}", time);
-
-    // Wait for 1 minute
-    thread::sleep(time::Duration::from_secs(1));
 }
 
 fn set_temperature(temperature: i32) -> Result<(), String> {
@@ -54,21 +103,4 @@ fn get_current_temperature() -> Result<i32, String> {
         .trim()
         .parse::<i32>()
         .map_err(|_| format!("Failed to parse temperature: '{}'", stdout))
-}
-
-fn toggle_temperature(temp_day: i32, temp_night: i32) -> Result<(), String> {
-    let current_temp = get_current_temperature()?;
-
-    let new_temp = if current_temp == temp_day {
-        temp_night
-    } else {
-        temp_day
-    };
-
-    println!(
-        "Current temperature: {}K, setting to: {}K",
-        current_temp, new_temp
-    );
-
-    set_temperature(new_temp)
 }
