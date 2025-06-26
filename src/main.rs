@@ -106,3 +106,27 @@ fn get_current_temperature() -> Result<i32, String> {
         .parse::<i32>()
         .map_err(|_| format!("Failed to parse temperature: '{}'", stdout))
 }
+
+/// duration in minutes
+fn transition(temperature_from: i32, temperature_to: i32, duration: i32) {
+    // seconds
+    let update_interval_sec = 10;
+
+    let temp_diff = temperature_to - temperature_from;
+
+    let steps = duration * 60 / update_interval_sec;
+    let step_size = temp_diff as f32 / steps as f32;
+    for i in 0..steps {
+        let current_temp = (temperature_from as f32 + step_size * i as f32) as i32;
+        if let Err(e) = set_temperature(current_temp) {
+            eprintln!("Error during transition: {}", e);
+            break;
+        }
+        thread::sleep(time::Duration::from_secs(update_interval_sec as u64));
+    }
+
+    // To be shure that we are a the right end temperature
+    if let Err(e) = set_temperature(temperature_to) {
+        eprintln!("Error during transition: {}", e);
+    }
+}
