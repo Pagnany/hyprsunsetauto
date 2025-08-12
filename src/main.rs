@@ -56,24 +56,18 @@ fn main() {
 
         // Check if we have to change the temperature
         if time_current < time_sunrise || time_current > time_sunset {
-            println!("It's night");
+            println!("It's night: {}K", temperature_current);
             if temperature_current != temperature_night {
                 println!("Setting temperature to {}K", temperature_night);
-                if let Err(e) = set_temperature(temperature_night) {
-                    eprintln!("Error setting night temperature: {}", e);
-                } else {
-                    temperature_current = temperature_night;
-                }
+                transition(temperature_current, temperature_night, 10);
+                temperature_current = temperature_night;
             }
         } else {
-            println!("It's day");
+            println!("It's day: {}K", temperature_current);
             if temperature_current != temperature_day {
                 println!("Setting temperature to {}K", temperature_day);
-                if let Err(e) = set_temperature(temperature_day) {
-                    eprintln!("Error setting day temperature: {}", e);
-                } else {
-                    temperature_current = temperature_day;
-                }
+                transition(temperature_current, temperature_day, 10);
+                temperature_current = temperature_day;
             }
         }
 
