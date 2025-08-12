@@ -13,3 +13,8 @@ Example:
 ```sh
 hyprsunsetauto 53.5 9.7 6500 3000
 ```
+In the ~/.config/hypr/hyprland.conf:
+```
+exec-once = hyprsunset -t 6500
+exec-once = hyprsunsetauto 52.31 7.36 6500 3500
+```
