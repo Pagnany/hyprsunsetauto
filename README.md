@@ -1,9 +1,15 @@
 
 Install with:
-´´´cargo install --path . --force --locked´´´
+```sh
+cargo install --path . --force --locked
+```
 
 Run:
-´´´hyprsunsetauto longitude latitude dayKelvin nightKelvin´´´
+```sh
+hyprsunsetauto longitude latitude dayKelvin nightKelvin
+```
 
 Example:
-´´´hyprsunsetauto 53.5 9.7 6500 3000´´´
+```sh
+hyprsunsetauto 53.5 9.7 6500 3000
+```
