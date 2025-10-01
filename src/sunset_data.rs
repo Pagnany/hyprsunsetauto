@@ -28,7 +28,7 @@ pub fn fetch_sunrise_sunset(
     long: f32,
 ) -> Result<SunriseSunsetResponse, Box<dyn std::error::Error>> {
     let url = format!(
-        "https://api.sunrisesunset.io/json?lat={:.6}&lng={:.6}",
+        "https://apiz.sunrisesunset.io/json?lat={:.6}&lng={:.6}",
         lat, long
     );
     println!("Fetching sunrise/sunset data from: {}", url);

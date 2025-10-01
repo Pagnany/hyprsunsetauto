@@ -20,14 +20,17 @@ fn main() {
     let mut temperature_current = get_current_temperature().unwrap_or(temperature_day);
     let mut date = Local::now().date_naive();
 
-    let (mut time_sunrise, mut time_sunset) =
+    let (mut time_sunrise, mut time_sunset) = loop {
         match sunset_data::get_sunrise_sunset_for_today(lat, long) {
-            Ok((sunrise, sunset)) => (sunrise, sunset),
+            Ok((sunrise, sunset)) => {
+                break (sunrise, sunset);
+            }
             Err(e) => {
-                eprintln!("Error fetching sunrise/sunset data: {}", e);
-                panic!();
+                eprintln!("Error fetching sunrise/sunset data in Setup: {}", e);
+                thread::sleep(time::Duration::from_secs(60));
             }
         };
+    };
 
     loop {
         // if Date has changed, fetch new sunrise/sunset times
