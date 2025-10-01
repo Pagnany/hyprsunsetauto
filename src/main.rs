@@ -16,6 +16,7 @@ fn main() {
     thread::sleep(time::Duration::from_secs(10));
 
     // Setup
+    let mut just_started = true;
     let mut temperature_current = get_current_temperature().unwrap_or(temperature_day);
     let mut date = Local::now().date_naive();
 
@@ -58,8 +59,18 @@ fn main() {
         if time_current < time_sunrise || time_current > time_sunset {
             println!("It's night: {}K", temperature_current);
             if temperature_current != temperature_night {
-                println!("Setting temperature to {}K", temperature_night);
-                transition(temperature_current, temperature_night, 10);
+                if just_started {
+                    println!(
+                        "Just started, setting temperature immediately to {}K",
+                        temperature_night
+                    );
+                    if let Err(e) = set_temperature(temperature_night) {
+                        eprintln!("Error setting temperature: {}", e);
+                    }
+                } else {
+                    println!("Setting temperature to {}K", temperature_night);
+                    transition(temperature_current, temperature_night, 10);
+                }
                 temperature_current = temperature_night;
             }
         } else {
@@ -71,6 +82,7 @@ fn main() {
             }
         }
 
+        just_started = false;
         thread::sleep(time::Duration::from_secs(60));
     }
 }
